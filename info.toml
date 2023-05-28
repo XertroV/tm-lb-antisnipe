@@ -1,0 +1,9 @@
+[meta]
+name     = "LB AntiSnipe"
+author   = "XertroV"
+category = "MLHook"
+version  = "0.1.0"
+
+[script]
+#__DEFINES__
+dependencies = ["MLHook"]
