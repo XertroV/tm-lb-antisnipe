@@ -152,6 +152,7 @@ Void CheckNewRecordsAndPatch() {
 
 
 Void OnDisableMsg() {
+    if (!CurrentlyEnabled) return;
     MLHookLog("Disabling.");
     if (Actual_RR_ZonesRecords.count > 0) {
         declare K_TMxSM_Record_Records[] Race_Record_ZonesRecords for ClientUI;
@@ -163,8 +164,9 @@ Void OnDisableMsg() {
 }
 
 Void OnEnableMsg() {
+    if (CurrentlyEnabled) return;
     MLHookLog("Enabling.");
-    Last_RR_ZonesRecordsUpdate = 0;
+    Last_RR_ZonesRecordsUpdate = -1;
     Cached_RR_ZonesRecords = [];
     Actual_RR_ZonesRecords = [];
     CurrentlyEnabled = True;

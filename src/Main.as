@@ -31,23 +31,24 @@ string CurrentMap() {
 }
 
 void OnMapChange() {
+    if (lastMapUid.Length == 0) return;
+    sleep(1000);
     CurrentlyEnabled = false;
     auto gameMode = cast<CTrackManiaNetworkServerInfo>(GetApp().Network.ServerInfo).CurGameModeStr;
     bool isSolo = gameMode.EndsWith("_Local");
     if (isSolo && S_EnableDefaultInSolo) {
         CurrentlyEnabled = true;
     }
-
     UpdateMLCurrentlyEnabled();
 }
 
 void UpdateMLCurrentlyEnabled() {
     if (CurrentlyEnabled) {
         SendEnableMsg();
-        Notify("Activating...");
+        if (S_ShowNotifOnToggle) Notify("Activating...");
     } else {
         SendDisableMsg();
-        Notify("Deactivating...");
+        if (S_ShowNotifOnToggle) Notify("Deactivating...");
     }
 }
 
@@ -90,3 +91,6 @@ bool S_EnableDefaultInSolo = false;
 
 [Setting category="LB AntiSnipe" name="Show quick-toggle in main menubar?"]
 bool S_ShowQuickToggleMenubar = true;
+
+[Setting category="LB AntiSnipe" name="Show notification when activating/deactivating?"]
+bool S_ShowNotifOnToggle = true;
