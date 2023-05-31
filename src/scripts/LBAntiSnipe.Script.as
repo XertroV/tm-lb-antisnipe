@@ -134,6 +134,9 @@ Void CheckNewRecordsAndPatch() {
 
     if (Race_Record_ZonesRecordsUpdate != Last_RR_ZonesRecordsUpdate) {
         declare K_TMxSM_Record_Records[] Race_Record_ZonesRecords for ClientUI;
+        if (Race_Record_ZonesRecords.count == 0) {
+            return;
+        }
 
         // new records have been delivered -- time to patch them
         Actual_RR_ZonesRecords = Race_Record_ZonesRecords;
@@ -166,7 +169,8 @@ Void OnDisableMsg() {
 Void OnEnableMsg() {
     if (CurrentlyEnabled) return;
     MLHookLog("Enabling.");
-    Last_RR_ZonesRecordsUpdate = -1;
+    declare Integer Race_Record_ZonesRecordsUpdate for ClientUI;
+    Last_RR_ZonesRecordsUpdate = Race_Record_ZonesRecordsUpdate - 9999;
     Cached_RR_ZonesRecords = [];
     Actual_RR_ZonesRecords = [];
     CurrentlyEnabled = True;
@@ -203,13 +207,13 @@ Void OnFirstLoad() {
 
 	declare K_TMxSM_Record_Records[] Race_Record_ZonesRecords for ClientUI;
 	declare Integer Race_Record_ZonesRecordsUpdate for ClientUI;
-    MLHookLog(""^Race_Record_ZonesRecords);
+    MLHookLog("Current records: "^Race_Record_ZonesRecords);
 }
 
-Void OnMapChange() {
-    CurrentlyEnabled = False;
-    Cached_RR_ZonesRecords = [];
-}
+// Void OnMapChange() {
+//     CurrentlyEnabled = False;
+//     Cached_RR_ZonesRecords = [];
+// }
 
 
 main() {
@@ -221,8 +225,8 @@ main() {
         yield;
         LoopCounter += 1;
         CheckIncoming();
-        CheckMapChange();
-        if (MapChanged) OnMapChange();
+        // CheckMapChange();
+        // if (MapChanged) OnMapChange();
 
         // main logic
         CheckNewRecordsAndPatch();
