@@ -1,6 +1,4 @@
 const string LBANTISNIPE_SCRIPT_TXT = """
-// one space indent otherwise they're treated as compiler preprocessor statements by openplanet
-// note: now done in pre-proc-scripts.py
  #Const C_PageUID "LBAntiSnipe"
  #Include "TextLib" as TL
 
@@ -30,7 +28,10 @@ Void CheckMapChange() {
 }
 
 declare Integer Last_RR_ZonesRecordsUpdate;
+// first set of records after loading map
 declare K_TMxSM_Record_Records[] Cached_RR_ZonesRecords;
+// most recent set of records that we overwrite
+declare K_TMxSM_Record_Records[] Actual_RR_ZonesRecords;
 
 
 K_TMxSM_Record_Records PatchRecsWith(K_TMxSM_Record_Records[] records, Text Zone, K_TMxSM_Record_Record Record) {
@@ -127,24 +128,23 @@ K_TMxSM_Record_Records[] PatchWorldRecords(K_TMxSM_Record_Records[] newRecords) 
 
 
 
-
-
 Void CheckNewRecordsAndPatch() {
-	declare K_TMxSM_Record_Records[] Race_Record_ZonesRecords for ClientUI;
-	declare Integer Race_Record_ZonesRecordsUpdate for ClientUI;
+    if (!CurrentlyEnabled) return;
+    declare Integer Race_Record_ZonesRecordsUpdate for ClientUI;
 
     if (Race_Record_ZonesRecordsUpdate != Last_RR_ZonesRecordsUpdate) {
+        declare K_TMxSM_Record_Records[] Race_Record_ZonesRecords for ClientUI;
+
         // new records have been delivered -- time to patch them
+        Actual_RR_ZonesRecords = Race_Record_ZonesRecords;
 
         // if we don't have cached records, cache the current ones
         if (Cached_RR_ZonesRecords.count == 0) {
             Cached_RR_ZonesRecords = Race_Record_ZonesRecords;
-        } else {
-            Race_Record_ZonesRecords = PatchWorldRecords(Race_Record_ZonesRecords);
-
-            // ensure we trigger an update after writing new records
-            Race_Record_ZonesRecordsUpdate = Race_Record_ZonesRecordsUpdate - 1;
         }
+        Race_Record_ZonesRecords = PatchWorldRecords(Race_Record_ZonesRecords);
+        // ensure we trigger an update after writing new records
+        Race_Record_ZonesRecordsUpdate = Race_Record_ZonesRecordsUpdate + 1;
 
         Last_RR_ZonesRecordsUpdate = Race_Record_ZonesRecordsUpdate;
     }
@@ -152,12 +152,24 @@ Void CheckNewRecordsAndPatch() {
 
 
 Void OnDisableMsg() {
-
+    MLHookLog("Disabling.");
+    if (Actual_RR_ZonesRecords.count > 0) {
+        declare K_TMxSM_Record_Records[] Race_Record_ZonesRecords for ClientUI;
+        declare Integer Race_Record_ZonesRecordsUpdate for ClientUI;
+        Race_Record_ZonesRecords = Actual_RR_ZonesRecords;
+        Race_Record_ZonesRecordsUpdate = Race_Record_ZonesRecordsUpdate + 1;
+    }
+    CurrentlyEnabled = False;
 }
+
 Void OnEnableMsg() {
-
+    MLHookLog("Enabling.");
+    Last_RR_ZonesRecordsUpdate = 0;
+    Cached_RR_ZonesRecords = [];
+    Actual_RR_ZonesRecords = [];
+    CurrentlyEnabled = True;
+    CheckNewRecordsAndPatch();
 }
-
 
 
 // from angelscript
@@ -174,14 +186,10 @@ Void CheckIncoming() {
                 MLHookLog("Skipped unknown incoming event: " ^ Event);
                 continue;
             }
-        // } else if (Event[0] == "AutosaveActive") {
-        //     AutosaveActive = Event[1] == "True";
-        //     SetAutosaveActive = True;
         } else {
             MLHookLog("Skipped unknown incoming event: " ^ Event);
             continue;
         }
-        // MLHookLog("Processed Incoming Event: "^Event[0]);
     }
     MLHook_Inbound_LBAntiSnipe = [];
 }
