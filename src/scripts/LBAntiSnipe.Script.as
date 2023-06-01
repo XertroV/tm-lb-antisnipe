@@ -40,6 +40,7 @@ K_TMxSM_Record_Records PatchRecsWith(K_TMxSM_Record_Records[] records, Text Zone
         declare K_TMxSM_Record_Record[] NewRecords = [];
         declare Boolean HasAdded = False;
         foreach (rec in recs.Records) {
+            // users previous time
             if (rec.AccountId == Record.AccountId) {
                 // ignore users previous records
                 MLHookLog("Ignoring previous time: " ^ rec);
@@ -68,11 +69,10 @@ K_TMxSM_Record_Records PatchRecsWith(K_TMxSM_Record_Records[] records, Text Zone
         return newRecs;
     }
 
-    declare NewRecord = Record;
-    NewRecord.Rank = 1;
+    // we didn't find a zone with the right name, so reutrn a default
     return K_TMxSM_Record_Records {
         ZoneName = Zone,
-        Records = [NewRecord],
+        Records = [Record],
         WorstTime = -1,
         IsFull = False,
         Type = 1
