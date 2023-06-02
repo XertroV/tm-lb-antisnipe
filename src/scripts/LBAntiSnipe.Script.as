@@ -62,7 +62,12 @@ K_TMxSM_Record_Records PatchRecsWith(K_TMxSM_Record_Records[] records, Text Zone
             }
         }
         if (!HasAdded) {
-            NewRecords.add(Record);
+            declare newRec = Record;
+            // only set rank if we're in the top 5
+            if (NewRecords.count < 5) {
+                newRec.Rank = NewRecords.count + 1;
+            }
+            NewRecords.add(newRec);
         }
         declare newRecs = recs;
         newRecs.Records = NewRecords;
