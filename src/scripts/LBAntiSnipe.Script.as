@@ -52,13 +52,13 @@ K_TMxSM_Record_Records PatchRecsWith(K_TMxSM_Record_Records[] records, Text Zone
                     RecCopy.Rank = NewRecords.count + 1;
                 }
                 NewRecords.add(RecCopy);
-            } else {
-                // don't add records past 5 to avoid leaderboard mixups; could also use the surround times from new records to add more if we want
-                if (NewRecords.count < 5) {
-                    declare newRec = rec;
-                    newRec.Rank = NewRecords.count + 1;
-                    NewRecords.add(newRec);
-                }
+
+            }
+            // don't add records past 5 to avoid leaderboard mixups; could also use the surround times from new records to add more if we want.
+            if (rec.Rank <= 5) {
+                declare newRec = rec;
+                newRec.Rank = NewRecords.count + 1;
+                NewRecords.add(newRec);
             }
         }
         if (!HasAdded) {
