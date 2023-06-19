@@ -31,6 +31,7 @@ string CurrentMap() {
 }
 
 void OnMapChange() {
+    bool wasEnabled = CurrentlyEnabled;
     if (lastMapUid.Length == 0) return;
     sleep(1000);
     CurrentlyEnabled = false;
@@ -39,16 +40,16 @@ void OnMapChange() {
     if (isSolo && S_EnableDefaultInSolo) {
         CurrentlyEnabled = true;
     }
-    UpdateMLCurrentlyEnabled();
+    UpdateMLCurrentlyEnabled(wasEnabled == CurrentlyEnabled);
 }
 
-void UpdateMLCurrentlyEnabled() {
+void UpdateMLCurrentlyEnabled(bool silent = false) {
     if (CurrentlyEnabled) {
         SendEnableMsg();
-        if (S_ShowNotifOnToggle) Notify("Activating...");
+        if (S_ShowNotifOnToggle && !silent) Notify("Activating...");
     } else {
         SendDisableMsg();
-        if (S_ShowNotifOnToggle) Notify("Deactivating...");
+        if (S_ShowNotifOnToggle && !silent) Notify("Deactivating...");
     }
 }
 
@@ -74,6 +75,9 @@ void RenderMenuMain() {
 
     auto inPg = GetApp().CurrentPlayground !is null;
 
+    // hide in main menu etc
+    if (!inPg) return;
+
     UI::BeginDisabled(!inPg);
 
 	bool wasClicked = UI::MenuItem("LB AntiSnipe", "", CurrentlyEnabled);
@@ -89,8 +93,8 @@ void RenderMenuMain() {
 [Setting category="LB AntiSnipe" name="Enable by default in Solo modes?" description="Whether to automatically enable for every map played in solo mode."]
 bool S_EnableDefaultInSolo = false;
 
-[Setting category="LB AntiSnipe" name="Show quick-toggle in main menubar?"]
+[Setting category="LB AntiSnipe" name="Show quick-toggle in main menubar?" description="Only appears when in-map."]
 bool S_ShowQuickToggleMenubar = true;
 
 [Setting category="LB AntiSnipe" name="Show notification when activating/deactivating?"]
-bool S_ShowNotifOnToggle = true;
+bool S_ShowNotifOnToggle = false;
